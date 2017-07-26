@@ -4,6 +4,7 @@ import dbus.mainloop.glib
 import sys
 from enum import Enum
 from app.indicator import Status
+from app.backends.interface import BackendInterface
 
 # https://upower.freedesktop.org/docs/Device.html#Device:State
 class UPowerState(Enum):
@@ -73,7 +74,7 @@ class Device:
         self.device.Refresh()
 
 
-class UPowerBackend:
+class UPowerBackend(BackendInterface):
     def find_devices(self):
         upower = self.system_bus.get_object('org.freedesktop.UPower', '/org/freedesktop/UPower')
         devices = upower.EnumerateDevices(dbus_interface='org.freedesktop.UPower')
