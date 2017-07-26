@@ -3,6 +3,6 @@ from app.backends.upower import UPowerBackend
 from gi.repository import GLib
 
 def start():
-    indicator = Indicator()
-    backend = UPowerBackend(indicator)
+    backend = UPowerBackend()
+    indicator = Indicator(backend)
     GLib.MainLoop().run()

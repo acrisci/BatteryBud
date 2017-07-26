@@ -70,13 +70,20 @@ class Device:
         return UPowerState(upower_state)
 
 
+    def get_online(self):
+        is_online = self.get_property('Online')
+        return is_online
+
+
     def refresh(self):
         self.device.Refresh()
 
 
 class UPowerBackend(BackendInterface):
     def find_devices(self):
-        upower = self.system_bus.get_object('org.freedesktop.UPower', '/org/freedesktop/UPower')
+        upower = self.system_bus.get_object(
+                'org.freedesktop.UPower',
+                '/org/freedesktop/UPower')
         devices = upower.EnumerateDevices(dbus_interface='org.freedesktop.UPower')
 
         battery = None
@@ -97,11 +104,13 @@ class UPowerBackend(BackendInterface):
         return (battery, line_power)
 
 
-    def __init__(self, indicator):
+    def __init__(self):
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-        self.indicator = indicator
         self.system_bus = dbus.SystemBus()
         (self.battery, self.line_power) = self.find_devices()
+
+        self.percent_callback = None
+        self.status_callback = None
 
         if not self.battery:
             raise Exception('could not find a battery')
@@ -109,27 +118,45 @@ class UPowerBackend(BackendInterface):
         if not self.line_power:
             raise Exception('could not find a line power device')
 
-        self.battery.refresh()
-        indicator.status = self.battery.get_state().to_indicator_status()
-        indicator.percent = self.battery.get_percentage()
-
         def battery_signal_handler(iface, props, _):
-            if 'Percentage' in props:
-                indicator.percent = props['Percentage']
-                indicator.update()
+            if 'Percentage' in props and self.percent_callback:
+                self.percent_callback(props['Percentage'])
 
         def line_power_signal_handler(iface, props, _):
-            if 'Online' in props:
-
+            if 'Online' in props and self.status_callback:
+                status = None
                 if props['Online']:
-                    indicator.status = Status.CHARGING
+                    status = Status.CHARGING
                 else:
-                    indicator.status = Status.DISCHARGING
+                    status = Status.DISCHARGING
+                self.status_callback(status)
 
-                indicator.update()
+
+        self.battery.properties.connect_to_signal(
+                'PropertiesChanged',
+                battery_signal_handler)
+
+        self.line_power.properties.connect_to_signal(
+                'PropertiesChanged',
+                line_power_signal_handler)
 
 
-        self.battery.properties.connect_to_signal('PropertiesChanged', battery_signal_handler)
-        self.line_power.properties.connect_to_signal('PropertiesChanged', line_power_signal_handler)
+    def get_status(self):
+        is_online = self.line_power.get_online()
+        if is_online:
+            return Status.CHARGING
+        else:
+            return Status.DISCHARGING
 
-        indicator.update()
+
+    def get_percent(self):
+        self.battery.refresh()
+        return float(self.battery.get_percentage())
+
+
+    def on_status_change(self, fn):
+        self.status_callback = fn
+
+
+    def on_percent_change(self, fn):
+        self.percent_callback = fn

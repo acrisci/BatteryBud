@@ -23,14 +23,29 @@ class Color(Enum):
 
 class Indicator(Gtk.StatusIcon):
 
-    def __init__(self):
+    def __init__(self, backend):
+        self.backend = backend
         self.icon_dir = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
                 'icons')
-        self.percent = 100
-        self.status = Status.DISCHARGING
+        self.percent = backend.get_percent()
+        self.status = backend.get_status()
         self.color = Color.WHITE
+
         super().__init__()
+
+        def percent_handler(percent):
+            self.percent = percent
+            self.update()
+
+        def status_handler(status):
+            self.status = status
+            self.update()
+
+        backend.on_status_change(status_handler)
+        backend.on_percent_change(percent_handler)
+
+        self.update()
 
 
     @staticmethod
