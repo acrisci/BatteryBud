@@ -12,6 +12,14 @@ BatteryBud is a battery power indicator. It sits in your system tray and display
 
 BatteryBud currently depends on the `UPower Device DBus Specification <https://upower.freedesktop.org/docs/Device.html>`__ but other backends will be supported in the future upon request.
 
+
+Usage
+-----
+
+BatteryBud requires Python 3, `PyGObject <https://pygobject.readthedocs.io/en/latest/>`__ and `dbus-python <https://www.freedesktop.org/wiki/Software/DBusBindings/>`__ to run.
+
+Simply run `./batterybud` to start the app and you should see a battery indicator in your tray (if you have a battery on your system).
+
 TODO
 ----
 
