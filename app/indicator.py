@@ -16,8 +16,13 @@ class Status(Enum):
     UNKNOWN = auto()
 
     def to_human_readable(self):
-        if self is Status.CHARGING:
-            return 'Plugged in'
+        lookup = {
+            Status.CHARGING: 'Plugged in',
+            Status.DISCHARGING: 'Discharging',
+            Status.ALERT: 'Alert!',
+            Status.UNKNOWN: 'Unknown status',
+        }
+        return lookup[self]
 
 
 @unique
@@ -98,10 +103,8 @@ class Indicator(Gtk.StatusIcon):
             'percent': str(self.percent)
         }
         fmt = textwrap.dedent('''
-
         {percent}%
         {charging}
-
         ''').strip()
         self.props.tooltip_text = fmt.format(**template)
         self.props.file = self.icon_path()
