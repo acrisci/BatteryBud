@@ -4,7 +4,7 @@ import dbus.mainloop.glib
 import sys
 from enum import Enum
 from app.indicator import Status
-from app.backends.interface import BackendInterface
+from app.backends.interface import BackendInterface, BatteryNotFoundError, LinePowerNotFoundError
 
 # https://upower.freedesktop.org/docs/Device.html#Device:State
 class UPowerState(Enum):
@@ -113,10 +113,10 @@ class UPowerBackend(BackendInterface):
         self.status_callback = None
 
         if not self.battery:
-            raise Exception('could not find a battery')
+            raise BatteryNotFoundError()
 
         if not self.line_power:
-            raise Exception('could not find a line power device')
+            raise LinePowerNotFoundError()
 
         def battery_signal_handler(iface, props, _):
             if 'Percentage' in props and self.percent_callback:

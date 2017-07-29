@@ -1,6 +1,12 @@
 from typing import Callable, Any
 from app.indicator import Status
 
+class BatteryNotFoundError(Exception):
+    pass
+
+class LinePowerNotFoundError(Exception):
+    pass
+
 class BackendInterface:
     '''
     Backends should inherit from this class and implement these methods. The
