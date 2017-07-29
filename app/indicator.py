@@ -6,6 +6,7 @@ from gi.repository import GLib, Gtk
 import os
 from enum import Enum, auto, unique
 import math
+import textwrap
 
 
 class Status(Enum):
@@ -13,6 +14,10 @@ class Status(Enum):
     DISCHARGING = auto()
     ALERT = auto()
     UNKNOWN = auto()
+
+    def to_human_readable(self):
+        if self is Status.CHARGING:
+            return 'Plugged in'
 
 
 @unique
@@ -24,6 +29,8 @@ class Color(Enum):
 class Indicator(Gtk.StatusIcon):
 
     def __init__(self, backend):
+        super().__init__()
+
         self.backend = backend
         self.icon_dir = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
@@ -31,8 +38,6 @@ class Indicator(Gtk.StatusIcon):
         self.percent = backend.get_percent()
         self.status = backend.get_status()
         self.color = Color.WHITE
-
-        super().__init__()
 
         def percent_handler(percent):
             self.percent = percent
@@ -88,4 +93,15 @@ class Indicator(Gtk.StatusIcon):
 
 
     def update(self):
+        template = {
+            'charging': self.status.to_human_readable(),
+            'percent': str(self.percent)
+        }
+        fmt = textwrap.dedent('''
+
+        {percent}%
+        {charging}
+
+        ''').strip()
+        self.props.tooltip_text = fmt.format(**template)
         self.props.file = self.icon_path()
