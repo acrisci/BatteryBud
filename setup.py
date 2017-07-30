@@ -10,7 +10,7 @@ setup(
     description='Battery tray status indicator',
     long_description=open('README.rst').read(),
 
-    #install_requires=['PyYAML', 'netifaces', 'i3ipc', 'ijson', 'requests'],
+    install_requires=['pyudev']
 
     classifiers=[
         'Development Status :: 4 - Beta',
