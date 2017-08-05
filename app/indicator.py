@@ -4,16 +4,16 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import GLib, Gtk
 import os
-from enum import Enum, auto, unique
+from enum import Enum, unique
 import math
 import textwrap
 
 
 class Status(Enum):
-    CHARGING = auto()
-    DISCHARGING = auto()
-    ALERT = auto()
-    UNKNOWN = auto()
+    CHARGING = 1
+    DISCHARGING = 2
+    ALERT = 3
+    UNKNOWN = 4
 
     def to_human_readable(self):
         lookup = {
